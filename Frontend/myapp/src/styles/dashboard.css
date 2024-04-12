@@ -1,0 +1,76 @@
+.home-screen {
+  display: flex;
+  flex-direction: row;
+}
+.main-screen {
+  width: 65%;
+  border-radius: 2rem;
+  margin: 2rem 1rem 2rem 2rem;
+  background-color: #333;
+  color: white;
+  padding: 0;
+}
+.resume-screen {
+  width: 35%;
+  height: fit-content;
+  position: sticky;
+  top: 1rem;
+  margin: 2rem 2rem 2rem 1rem;
+  border-radius: 2rem;
+}
+.iframe-win {
+  overflow: hidden;
+  height: 39.5rem;
+  padding: 1rem 1rem 1rem 1rem;
+  border-radius: 2rem;
+}
+.heading-div {
+  margin: 1rem 1rem 1rem 1rem;
+  color: wheat;
+}
+.tag-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: left;
+  gap: 10px;
+  padding: 20px;
+}
+
+.prog-bar {
+padding:20px 0px 20px 0px;
+}
+.tag {
+  background-color: #ff4d4d;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.tag .close {
+  margin-left: 5px;
+  cursor: pointer;
+}
+.redo-container {
+  display: block;
+}
+.redo-button {
+  color: green;
+  background: none;
+  font-size: 1.4rem;
+  border: none;
+}
+.basic-details-subcontainer {
+  text-align: left;
+  color: white;
+}
+
+@media only screen and (max-width: 720px) {
+  .resume-screen {
+    display: none;
+  }
+  .main-screen {
+    width: 100%;
+  }
+}

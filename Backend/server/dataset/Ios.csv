@@ -1,0 +1,200 @@
+Swift
+Objective-C
+Xcode
+UIKit
+SwiftUI
+Interface Builder
+Core Data
+Core Animation
+Core Graphics
+Auto Layout
+App Store
+iOS SDK
+Cocoa Touch
+Storyboard
+View Controller
+Model-View-Controller (MVC)
+Delegate
+Protocol
+Framework
+iOS Development Tools
+Cocoapods
+Dependency Injection
+Reactive Programming
+MVVM (Model-View-ViewModel)
+RESTful APIs
+JSON Parsing
+Grand Central Dispatch (GCD)
+Multithreading
+Concurrency
+Push Notifications
+Local Notifications
+Background Tasks
+App Sandbox
+Keychain Services
+Touch ID
+Face ID
+Core Location
+MapKit
+Geolocation
+Core Motion
+Accelerometer
+Gyroscope
+Core Bluetooth
+iBeacon
+Core NFC
+Augmented Reality (ARKit)
+Machine Learning (Core ML)
+Vision Framework
+Natural Language Processing (NLP)
+SiriKit
+HealthKit
+HomeKit
+CloudKit
+In-App Purchases
+Game Center
+TestFlight
+Continuous Integration (CI)
+Code Signing
+Provisioning Profile
+Device Orientation
+Adaptive Layout
+Dark Mode
+Localization
+Accessibility
+Dynamic Type
+Siri Shortcuts
+Today Widgets
+Extensions
+WatchKit
+App Clips
+AR Quick Look
+Metal
+SpriteKit
+SceneKit
+ARCore
+Firebase
+Analytics
+Crash Reporting
+Cloud Firestore
+Real-time Database
+Authentication
+Cloud Functions
+Hosting
+ML Kit
+AdMob
+Google Sign-In
+Facebook Login
+Twitter Kit
+UIKit Dynamics
+UIStackView
+UICollectionView
+UITableView
+UITableViewCell
+UICollectionViewLayout
+Autoresizing Mask
+CALayer
+CATransaction
+Core Animation Transitions
+Gesture Recognizers
+UIPanGestureRecognizer
+UITapGestureRecognizer
+UISwipeGestureRecognizer
+UIPageViewController
+UIAlertController
+UINavigationController
+UITabBarController
+UIImagePickerController
+UIWebView
+WKWebView
+AVFoundation
+AVCaptureSession
+AVPlayer
+AVAudioPlayer
+Audio Recording
+Video Playback
+Core Image
+CIFilter
+Core Graphics Drawing
+UIBezierPath
+CAGradientLayer
+Quartz 2D
+Core Text
+Text Kit
+NSAttributedString
+NSURLSession
+URLSessionDataTask
+URLSessionDownloadTask
+URLSessionUploadTask
+NSURLSessionConfiguration
+NSURLRequest
+NSURLResponse
+NSURLConnection
+NSURLComponents
+NSUserDefaults
+NSFileManager
+NSNotificationCenter
+NSNotification
+NSPredicate
+NSRegularExpression
+NSTimer
+NSDate
+NSTimeZone
+NSDateFormatter
+NSCalendar
+NSLocale
+NSNumber
+NSString
+NSArray
+NSMutableArray
+NSDictionary
+NSMutableDictionary
+NSSet
+NSMutableSet
+Core Foundation
+CFString
+CFArray
+CFDictionary
+CFSet
+CFRunLoop
+CFRunLoopSource
+CFRunLoopObserver
+CFNotificationCenter
+CFStream
+CFURL
+CFUUID
+CFPropertyList
+CFBundle
+CoreData Stack
+NSFetchedResultsController
+NSManagedObject
+NSManagedObjectContext
+NSPersistentContainer
+Core Data Migration
+Core Data Concurrency
+Core Data Relationships
+Core Data Validation
+Core Data Fetching
+Core Data Sorting
+Core Data Filtering
+Core Data Batch Processing
+Core Data Indexing
+Core Data iCloud Integration
+Core Data Encryption
+Core Data Performance Tuning
+Core Data Error Handling
+Core Data Background Tasks
+Core Data REST API Integration
+Core Data JSON Serialization
+Core Data XML Serialization
+Core Data CSV Serialization
+Core Data Migration Versioning
+Core Data Lightweight Migration
+Core Data Heavyweight Migration
+Core Data Entity Inheritance
+Core Data Entity Relationships
+Core Data Fetch Requests
+Core Data Fetching with Predicates
+Core Data Fetching with Sorting
+Core Data Fetching with Grouping
+Core Data Fetching with Aggregation.
