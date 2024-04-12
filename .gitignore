@@ -1,4 +1,1 @@
-Backend/server/venv/
-**/node_modules
-temp/
-Frontend/myapp/node_modules
+temp
