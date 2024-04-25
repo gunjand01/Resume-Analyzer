@@ -1,3 +1,4 @@
+
 import csv
 import json
 import os
@@ -11,23 +12,18 @@ import pandas as pd
 import sys
 from spacy.matcher import Matcher
 from fuzzywuzzy import fuzz
-from fuzzywuzzy import process
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-from fitz import open as fitz_open
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from nltk import pos_tag, word_tokenize
 from spacy import load
-from Courses import ds_course,web_course,android_course,ios_course,uiux_course,resume_videos,interview_videos
-
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.feature_extraction.text import TfidfVectorizer
+from fitz import open as fitz_open
 
 stop_words = stopwords.words('english')
 lemmatizer = WordNetLemmatizer()
-similarity_corrector = 13.5
 nlp = load('en_core_web_lg')
-# Initialize Spacy
-nlp = spacy.load("en_core_web_sm")
+nlp_sm = spacy.load("en_core_web_sm")
 matcher = Matcher(nlp.vocab)
 
 # Function to read skills from CSV
@@ -51,7 +47,7 @@ def preprocess_text(text):
 
 # Function to extract name
 def extract_name(resume_text):
-    nlp_text = nlp(resume_text)
+    nlp_text = nlp_sm(resume_text)
     pattern = [{'POS': 'PROPN'}, {'POS': 'PROPN'}]
     matcher.add('NAME', [pattern])
     matches = matcher(nlp_text)
@@ -61,7 +57,6 @@ def extract_name(resume_text):
 
 # Function to extract email
 def extract_email(doc):
-    matcher = spacy.matcher.Matcher(nlp.vocab)
     email_pattern = [{"TEXT": {"REGEX": "[a-zA-Z0-9-_.]+@[a-zA-Z0-9-_.]+"}}]
     matcher.add("Email", [email_pattern])
     matches = matcher(doc)
@@ -69,16 +64,13 @@ def extract_email(doc):
 
 # Function to extract phone
 def extract_phone(doc):
-    matcher = spacy.matcher.Matcher(nlp.vocab)
-    phone_pattern = [
-        {"TEXT": {"REGEX": r"\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}"}}]
+    phone_pattern = [{"TEXT": {"REGEX": r"\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}"}}]
     matcher.add("Phone", [phone_pattern])
     matches = matcher(doc)
     return [doc[start:end].text for match_id, start, end in matches if nlp.vocab.strings[match_id] == "Phone"]
 
 # Function to extract links
 def extract_links(doc):
-    matcher = spacy.matcher.Matcher(nlp.vocab)
     link_pattern = [{"TEXT": {"REGEX": r"https?://[^\s]+"}}]
     matcher.add("Link", [link_pattern])
     matches = matcher(doc)
@@ -98,76 +90,52 @@ def parse_resume(filepath, extract_fields=None):
         print(f"Error parsing resume: {e}")
         return None
 
+# Train Random Forest Classifier
+def train_classifier(resumes, scores):
+    vectorizer = TfidfVectorizer()
+    X = vectorizer.fit_transform(resumes)
+    clf = RandomForestRegressor()
+    clf.fit(X, scores)
+    return clf
+
+# Function to calculate resume score using trained classifier
+def calculate_resume_score(your_resume, all_resumes, clf):
+    vectorizer = TfidfVectorizer()
+    X = vectorizer.fit_transform(all_resumes)
+    your_resume_vec = vectorizer.transform([your_resume])
+    return clf.predict(your_resume_vec)[0]
+
 # Function to recommend skills
 def recommend_skills(extracted_skills, num_recommendations=30):
     recommended_skills = []
-    reco_field = ''
     random.shuffle(extracted_skills)
-    # Loop through each dataset and check for matches
-    datasets = ['./dataset/Android.csv','./dataset/Web.csv', './dataset/Data_science.csv','./dataset/uiux.csv', './dataset/Ios.csv']  # Add more datasets if needed
-    for dataset in datasets:
-        skills = read_skills_from_csv(dataset)
-        for skill in skills:
-            skill_lower = skill.strip().lower()
-            matched = False
-            for extracted_skill in extracted_skills:
-                extracted_skill_lower = extracted_skill.strip().lower()
-                match_score = fuzz.token_set_ratio(skill_lower, extracted_skill_lower)
-                if match_score >= 40:  # Adjust the threshold as needed
-                    matched = True
-                    break
-            if not matched:
-                recommended_skills.append(skill)
-            if len(recommended_skills) >= num_recommendations:
-                return recommended_skills
-
-    return recommended_skills, reco_field
-
-def calc_similarity(your_resume, all_resumes):
-    """
-    Calculate cosine similarity scores between your resume and all other resumes.
-    """
-    vectorizer = TfidfVectorizer()
-    vectors = vectorizer.fit_transform(all_resumes)
-
-    cosine_similarities = cosine_similarity(vectors)[0][1:]
-    return cosine_similarities
-
-def ettf(pdf_file):
-    with fitz_open(pdf_file) as doc:
-        text = "\n".join([page.get_text()
-                         for page in doc])
-
-    return re.sub(r'[^\w\s]', '', text.lower())
-
-
-def pptfr(text):
-
-    tokens = word_tokenize(text)
-    tokens = [token.lower() for token in tokens]
-
-    processed_tokens = [token for token in tokens if token not in stop_words]
-
-    lemmatized_tokens = [lemmatizer.lemmatize(
-        token) for token in processed_tokens]
-
-    pos_tagged_tokens = pos_tag(lemmatized_tokens)
-
-    processed_text = " ".join(lemmatized_tokens)
-    return processed_text
-
-
-
-
+    # Load skills dataset
+    skills_dataset = './dataset/skills.csv'
+    skills = read_skills_from_csv(skills_dataset)
+    # Loop through each skill in the dataset
+    for skill in skills:
+        skill_lower = skill.strip().lower()
+        matched = False
+        for extracted_skill in extracted_skills:
+            extracted_skill_lower = extracted_skill.strip().lower()
+            match_score = fuzz.token_set_ratio(skill_lower, extracted_skill_lower)
+            if match_score >= 40:  # Adjust the threshold as needed
+                matched = True
+                break
+        if not matched:
+            recommended_skills.append(skill)
+        if len(recommended_skills) >= num_recommendations:
+            return recommended_skills
+    return recommended_skills
 
 def main(pdf_file):
     # Paths and settings
     skills_csv_file = './dataset/skills.csv'
     extract_fields = ["name", "email", "skills"]
+    
     # Extract data using Pyresparser
     extracted_data = parse_resume(pdf_file, extract_fields)
-    # Extracted skills from CSV
-    skills_list = read_skills_from_csv(skills_csv_file)
+    
     # Extracted text from PDF
     resume_text = extract_text_from_pdf(pdf_file)
 
@@ -178,21 +146,26 @@ def main(pdf_file):
     phone = extract_phone(nlp(resume_text))
     links = extract_links(nlp(resume_text))
     extracted_skills = extracted_data.get("skills", [])
-    recommended_skills = recommend_skills(extracted_skills)
-    
+
+    # Extracted skills from CSV
+    skills_list = read_skills_from_csv(skills_csv_file)
+
+    # Train the classifier
     resumes_df = pd.read_csv("./dataset/URds.csv")
     resumes_df["preprocessed_text"] = resumes_df["Resume"].fillna("") + " " + resumes_df["Category"].fillna("")
-    resumes_df["preprocessed_text"] = resumes_df["preprocessed_text"].apply(pptfr)
-    your_resume = ettf(pdf_file)
-    your_resume = pptfr(your_resume)
+    resumes_df["preprocessed_text"] = resumes_df["preprocessed_text"].apply(preprocess_text)
     good_resumes = resumes_df["preprocessed_text"].tolist()
+    training_resumes = good_resumes
+    training_scores = [random.uniform(50, 100) for _ in range(len(good_resumes))]
+    clf = train_classifier(training_resumes, training_scores)
 
-    vectorizer = TfidfVectorizer()
-    vectors = vectorizer.fit_transform([your_resume] + good_resumes)
+    # Calculate resume score for the given resume
+    resume_score = calculate_resume_score(preprocess_text(resume_text), good_resumes, clf)
 
-    cosine_similarities = cosine_similarity(vectors)[0][1:]
+    # Recommend skills
+    recommended_skills = recommend_skills(extracted_skills)
 
-    # Save the resume score in the final data
+    # Save the resume score and recommended skills in the final data
     final_data = {
         "Name": name,
         "Email": email,
@@ -200,7 +173,7 @@ def main(pdf_file):
         "Links": links,
         "Skills": extracted_data.get("skills", []),
         "Recommended_Skills": recommended_skills,
-        "Resume_Score": (cosine_similarities.mean() * similarity_corrector)*100 
+        "Resume_Score": resume_score
     }
 
     # Save extracted data to JSON

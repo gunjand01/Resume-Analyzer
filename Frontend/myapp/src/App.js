@@ -7,6 +7,8 @@ import UploadResume from './component/uploadResume';
 import Homepage from './component/homepage';
 import ProfileStatistics from './component/assets/userProfile';
 import Profiles from './component/assets/team/team'
+import JobDetails from './component/jobs'
+
 
 function App() {
   return (
@@ -20,6 +22,8 @@ function App() {
           <Route path="/resumeUpload" element={< UploadResume/>} />
           <Route path="/userProfile" element={< ProfileStatistics/>} />
           <Route path="/team" element={< Profiles/>} />
+          <Route path="/getJobs" element={< JobDetails/>} />
+
         </Routes>
       </Router>
     </div>
