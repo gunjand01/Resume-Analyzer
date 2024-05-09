@@ -32,7 +32,7 @@ const Registration = () => {
       if (response.ok) {
         toast.success('Signup successful');
         setTimeout(() => {
-          navigate("/resumeUpload");
+          navigate("/login");
         }, 1600);
       } else {
         const errorMessage = await response.text();

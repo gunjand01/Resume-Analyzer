@@ -42,7 +42,7 @@ const UploadResume = () => {
       console.log(file);
     }
   };
-
+  const token = localStorage.getItem('token');
   const handleFileChange = async (event) => {
     const uploadedFile = event.target.files[0];
     if (uploadedFile) {
@@ -56,6 +56,7 @@ const UploadResume = () => {
           {
             headers: {
               "Content-Type": "multipart/form-data",
+              "Authorization": `Bearer ${token}`
             },
           }
         );
@@ -104,8 +105,8 @@ const UploadResume = () => {
                               y2="0.19"
                               gradientUnits="userSpaceOnUse"
                             >
-                              <stop offset="0.67" stop-color="#112caf"></stop>
-                              <stop offset="0.77" stop-color="#2250f4"></stop>
+                              <stop offset="0.67" stopColor="#112caf"></stop>
+                              <stop offset="0.77" stopColor="#2250f4"></stop>
                             </linearGradient>
                           </defs>
                           <path

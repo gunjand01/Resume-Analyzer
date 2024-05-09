@@ -1,104 +1,3 @@
-// import React, { useState } from "react";
-// import "../styles/navbar.css";
-// import img1 from "../img/logo.png";
-// import ProfileStatistics from "./assets/userProfile";
-
-// const Navbar = () => {
-//   const [isLoggedIn, setIsLoggedIn] = useState(true);
-//   const [showProfileCard, setShowProfileCard] = useState(false);
-//   const [isOpen, setIsOpen] = useState(false);
-
-//   const handleProfileClick = () => {
-//     setShowProfileCard(true);
-//   };
-
-//   const handleCloseProfileCard = () => {
-//     setShowProfileCard(false);
-//   };
-
-//   return (
-//     <div>
-//       <div className="page-wrapper">
-//         <div className="nav-wrapper">
-//           <div className="gradbar"></div>
-//           <nav className="navbar">
-//             <img src={img1} alt="Company Logo" />
-//             <div
-//               className={`menu-toggle ${isOpen ? "open" : ""}`}
-//               onClick={() => setIsOpen(!isOpen)}
-//             >
-//               <div className="bar"></div>
-//               <div className="bar"></div>
-//               <div className="bar"></div>
-//             </div>
-
-//             <ul className={`nav ${isOpen ? "mobile-nav" : ""}`}>
-//               <li className="nav-item">
-//                 <div className="user-div" href="/">
-//                   Home{" "}
-//                 </div>
-//               </li>
-//               <li className="nav-item">
-//                 <div className="user-div">
-//                   Team{" "}
-//                 </div>
-//               </li>
-//               <li className="nav-item">
-//                 <div className="user-div" href="/">
-//                   About{" "}
-//                 </div>
-//               </li>
-//               {isLoggedIn ? (
-//                 <>
-//                   <li className="nav-item">
-//                     <div className="user-div" onClick={handleProfileClick}>
-//                       User Profile
-//                     </div>
-//                   </li>
-//                   <li className="nav-item">
-//                     <div
-//                       className="user-div"
-//                       onClick={() => setIsLoggedIn(false)}
-//                     >
-//                       Logout
-//                     </div>
-//                   </li>
-//                 </>
-//               ) : (
-//                 <>
-//                   <li className="nav-item">
-//                     <div className="user-div" href="/login">
-//                       Login{" "}
-//                     </div>
-//                   </li>
-//                   <li className="nav-item">
-//                     <div className="user-div" href="/register">
-//                       Register{" "}
-//                     </div>
-//                   </li>
-//                 </>
-//               )}
-//             </ul>
-//           </nav>
-//         </div>
-//       </div>
-//       {/* Conditionally render ProfileStatistics */}
-//       {showProfileCard && (
-//         <div className="profile-card">
-//           <ProfileStatistics />
-//           <button onClick={handleCloseProfileCard} className="close-btn">
-//             ×
-//           </button>
-//         </div>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default Navbar;
-
-
-
 import React, { useState } from "react";
 import { Link } from "react-router-dom"; // Import Link from react-router-dom
 import "../styles/navbar.css";
@@ -113,6 +12,10 @@ const Navbar = () => {
   const handleProfileClick = () => {
     setShowProfileCard(true);
   };
+  const handleLogout=()=>{
+    setIsLoggedIn(false);
+    localStorage.removeItem("token")
+  }
 
   const handleCloseProfileCard = () => {
     setShowProfileCard(false);
@@ -160,7 +63,7 @@ const Navbar = () => {
                   <li className="nav-item">
                     <Link
                       className="user-div"
-                      onClick={() => setIsLoggedIn(false)}
+                      onClick={handleLogout}
                     >
                       Logout
                     </Link>
@@ -184,7 +87,6 @@ const Navbar = () => {
           </nav>
         </div>
       </div>
-      {/* Conditionally render ProfileStatistics */}
       {showProfileCard && (
         <div className="profile-card">
           <ProfileStatistics />
@@ -196,5 +98,4 @@ const Navbar = () => {
     </div>
   );
 };
-
 export default Navbar;
