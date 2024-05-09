@@ -21,9 +21,12 @@ const Login = () => {
           username,
           password,
         }),
+      }).then((res)=>{
+        return res.json();
       });
-
-      if (response.ok) {
+      console.log(response)
+      if (response.token) {
+        localStorage.setItem("token",response.token)
         toast.success("Login successful");
         setTimeout(() => {
           navigate("/resumeUpload");

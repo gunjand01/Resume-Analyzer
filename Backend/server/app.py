@@ -1,4 +1,3 @@
-
 import csv
 import json
 import os
@@ -10,6 +9,7 @@ import spacy
 import pyresparser
 import pandas as pd
 import sys
+import requests
 from spacy.matcher import Matcher
 from fuzzywuzzy import fuzz
 from nltk.corpus import stopwords
@@ -19,6 +19,18 @@ from spacy import load
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.feature_extraction.text import TfidfVectorizer
 from fitz import open as fitz_open
+from pymongo import MongoClient
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Connect to MongoDB
+mongodb_uri = os.getenv("MONGODB_URI")
+client = MongoClient(mongodb_uri)
+db = client.MajorProject
+collection = db.resume_datas
+
 
 stop_words = stopwords.words('english')
 lemmatizer = WordNetLemmatizer()
@@ -128,7 +140,7 @@ def recommend_skills(extracted_skills, num_recommendations=30):
             return recommended_skills
     return recommended_skills
 
-def main(pdf_file):
+def main(pdf_file,token):
     # Paths and settings
     skills_csv_file = './dataset/skills.csv'
     extract_fields = ["name", "email", "skills"]
@@ -164,7 +176,7 @@ def main(pdf_file):
 
     # Recommend skills
     recommended_skills = recommend_skills(extracted_skills)
-
+    
     # Save the resume score and recommended skills in the final data
     final_data = {
         "Name": name,
@@ -175,17 +187,28 @@ def main(pdf_file):
         "Recommended_Skills": recommended_skills,
         "Resume_Score": resume_score
     }
+    
+    node_server_url = "http://localhost:3001/resources"
+    # Include t he token in the Authorization header
+    headers = {
+        'Authorization': f'Bearer {token}',
+        'Content-Type': 'application/json'
+    }
 
-    # Save extracted data to JSON
-    filename_without_extension = os.path.splitext(os.path.basename(pdf_file))[0]
-    json_filename = f"./json/{filename_without_extension}.json"
-    with open(json_filename, "w") as json_file:
-        json.dump(final_data, json_file, indent=4)
-    print("Extracted data saved to", json_filename)
+    # Send the HTTP request with the token in the headers
+    response = requests.post(node_server_url, json=final_data, headers=headers)
+
+    # Check the response status code
+    if response.status_code == 201:
+        print("Resume data saved successfully")
+    else:
+        print(f"Failed to save resume data: {response.text}")
+
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python app.py <pdf_file>")
+    if len(sys.argv) != 3:
+        print("Usage: python app.py <pdf_file> <token>")
         sys.exit(1)
     pdf_file = sys.argv[1]
-    main(pdf_file)
+    token = sys.argv[2]
+    main(pdf_file,token)

@@ -4,16 +4,25 @@ import "../styles/dashboard.css";
 import { CircularProgressbar } from "react-circular-progressbar";
 import "../../node_modules/react-circular-progressbar/dist/styles.css";
 
-
 const Dashboard = () => {
   const [resumeData, setResumeData] = useState(null);
 
   useEffect(() => {
     const fetchResumeData = async () => {
       try {
-        const response = await fetch("http://localhost:3001/resumes");
+        const token = localStorage.getItem("token"); 
+        // Retrieve the token from local storage
+        const response = await fetch("http://localhost:3001/resources", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+             // Include the token in the Authorization header
+            "Content-Type": "application/json",
+          },
+        });
         const data = await response.json();
+        console.log(data)
         setResumeData(data);
+        // Assuming setResumeData is a state updater function
       } catch (error) {
         console.error("Error fetching resume data:", error);
       }
@@ -25,14 +34,15 @@ const Dashboard = () => {
   if (!resumeData) {
     return <div>Loading...</div>;
   }
-  const { Name, Email, Phone, Skills, Recommended_Skills,Resume_Score } = resumeData;
+  const { Name, Email, Phone, Skills, Recommended_Skills, Resume_Score } =
+    resumeData;
   const getColor = () => {
-    if (Resume_Score >= 75) { 
-      return '#00cc00'; 
+    if (Resume_Score >= 65) {
+      return "#00cc00";
     } else if (Resume_Score >= 45) {
-      return '#ffcc00';
+      return "#ffcc00";
     } else {
-      return '#ff0000';
+      return "#ff0000";
     }
   };
   const formattedScore = Resume_Score.toFixed(2);
@@ -41,13 +51,13 @@ const Dashboard = () => {
       value={Resume_Score}
       text={`${formattedScore}%`}
       styles={{
-        root: { width: '200px' },
+        root: { width: "200px" },
         path: {
           stroke: getColor(),
         },
-        
+
         text: {
-          fill: getColor(), 
+          fill: getColor(),
         },
       }}
     />
@@ -96,15 +106,15 @@ const Dashboard = () => {
             </div>
           </div>
           <div className="heading-div">
-              <h1>Resume Score</h1>
-                        <div className="prog-bar">
+            <h1>Resume Score</h1>
+            <div className="prog-bar">
               <CircularProgress />
             </div>
           </div>
         </div>
         <div className="resume-screen">
           <iframe
-           title="myFrame"
+            title="myFrame"
             className="iframe-win"
             src={`http://localhost:3001/resumeName/`}
             width="100%"
