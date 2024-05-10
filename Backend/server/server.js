@@ -19,7 +19,6 @@ app.use(json());
 app.use(express.json());
 app.use(cors());
 
-
 const secretKey = 'mynameisharshal';
 const userSchema = new Schema({
     username: String,
@@ -40,8 +39,8 @@ const resourceSchema = new Schema({
     user: {
         type: Schema.Types.ObjectId,
         ref: 'User'
-    }
-});
+    }}
+    , { timestamps: true });
 const Resource = mongoose.model('Resource', resourceSchema);
 
 function authenticateToken(req, res, next) {
@@ -110,7 +109,6 @@ app.post('/login', async (req, res) => {
 app.post('/resources', authenticateToken, async (req, res) => {
     const { username, Name, Email, Phone, Links, Skills, Recommended_Skills, Resume_Score } = req.body;
     const userId = req.user.token;
-    // console.log(userId)
     try {
         const resource = new Resource({ username, Name, Email, Phone, Links, Skills, Recommended_Skills, Resume_Score, user: userId });
         const savedResource = await resource.save();
@@ -120,19 +118,19 @@ app.post('/resources', authenticateToken, async (req, res) => {
     }
 });
 
-
 app.get('/resources', authenticateToken, async (req, res) => {
     const userId = req.user.token;
     try {
-        const latestResource = await Resource.findOne({}).sort({$natural:-1}).limit(1)
-        res.json(latestResource);
+        const resource = await Resource.findOne({ user: userId }).sort({ createdAt: -1 });
+        if (resource) {
+            res.json(resource);
+        } else {
+            res.status(404).json({ message: 'Resource not found' });
+        }
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 });
-
-
-
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
