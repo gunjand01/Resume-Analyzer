@@ -94,6 +94,7 @@ def parse_resume(filepath, extract_fields=None):
     try:
         data = pyresparser.ResumeParser(filepath).get_extracted_data()
         if extract_fields is None:
+            print(data)
             return data
         else:
             selected_data = {field: data[field] for field in extract_fields if field in data}
@@ -108,6 +109,7 @@ def train_classifier(resumes, scores):
     X = vectorizer.fit_transform(resumes)
     clf = RandomForestRegressor()
     clf.fit(X, scores)
+    print(clf)
     return clf
 
 # Function to calculate resume score using trained classifier
@@ -115,6 +117,7 @@ def calculate_resume_score(your_resume, all_resumes, clf):
     vectorizer = TfidfVectorizer()
     X = vectorizer.fit_transform(all_resumes)
     your_resume_vec = vectorizer.transform([your_resume])
+    print(your_resume_vec)
     return clf.predict(your_resume_vec)[0]
 
 # Function to recommend skills
