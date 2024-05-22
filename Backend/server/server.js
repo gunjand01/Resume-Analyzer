@@ -28,6 +28,7 @@ const userSchema = new Schema({
     email: String,
 });
 const User = mongoose.model('User', userSchema);
+
 const resourceSchema = new Schema({
     Name: String,
     Email: [String],
@@ -36,12 +37,25 @@ const resourceSchema = new Schema({
     Skills: [String],
     Recommended_Skills: [String],
     Resume_Score: Number,
+    AboutMe:String,
+
     user: {
         type: Schema.Types.ObjectId,
         ref: 'User'
     }}
     , { timestamps: true });
 const Resource = mongoose.model('Resource', resourceSchema);
+
+const VideoResumeSchema = new mongoose.Schema({
+    AboutMe :String,
+    input_file:String,
+    user: {
+        type: Schema.Types.ObjectId,
+        ref: 'User'
+    }
+});
+const VideoResumeModel = mongoose.model("Video-resume", VideoResumeSchema);
+
 
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
@@ -97,15 +111,15 @@ app.post('/login', async (req, res) => {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
         const token = jwt.sign({ token: user._id }, secretKey); 
-        jwt.verify(token, secretKey, function (err, decoded) {
-            console.log(decoded.token) // bar
-        });
-        res.json({ token });
+        const userResources = await Resource.findOne({ user: user._id });
+
+        res.json({ token, hasResources: !!userResources });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 });
 
+// Endpoint to Post resources to the Database.
 app.post('/resources', authenticateToken, async (req, res) => {
     const { username, Name, Email, Phone, Links, Skills, Recommended_Skills, Resume_Score } = req.body;
     const userId = req.user.token;
@@ -117,11 +131,36 @@ app.post('/resources', authenticateToken, async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 });
-
+ // Endpoint to Fetch resources from the Database.
 app.get('/resources', authenticateToken, async (req, res) => {
     const userId = req.user.token;
     try {
         const resource = await Resource.findOne({ user: userId }).sort({ createdAt: -1 });
+        if (resource) {
+            res.json(resource);
+        } else {
+            res.status(404).json({ message: 'Resource not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+app.post('/videoResources', authenticateToken, async (req, res) => {
+    const { AboutMe ,input_file} = req.body;
+    const userId = req.user.token;
+    try {
+        const videoResource = new VideoResumeModel({ AboutMe, input_file,user: userId });
+        const savedResource = await videoResource.save();
+        res.status(201).json(savedResource);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+});
+
+app.get('/videoResources', authenticateToken, async (req, res) => {
+    const userId = req.user.token;
+    try {
+        const resource = await VideoResumeModel.findOne({ user: userId }).sort({ createdAt: -1 });
         if (resource) {
             res.json(resource);
         } else {
@@ -151,7 +190,6 @@ app.post('/upload',authenticateToken ,upload.single('resume'), (req, res) => {
     const resumeFilePath = req.file.path;
     resumeFileName = req.file.originalname;
     console.log('Reading Resume.....');
-    // console.log(req.token)
     const pyProg = spawn('python', ['./app.py', resumeFilePath,req.token]);
     console.log('Running Python Script....');
     let responseData = '';
@@ -179,6 +217,58 @@ app.post('/upload',authenticateToken ,upload.single('resume'), (req, res) => {
             // res.redirect('http://localhost:3000/dashboard');
         } else {
             res.status(500).send(`Resume parsing failed. Error: ${errorData}`);
+        }
+    });
+});
+
+const storage1 = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, './video'); // change the destination directory as needed
+    },
+    filename: function (req, file, cb) {
+        cb(null, file.originalname);
+    }
+});
+
+const upload1 = multer({ storage: storage1 });
+let videoFileName = "videoResume.mp4"
+app.post('/uploadVideo', authenticateToken, upload1.single('video'), (req, res) => {
+    if (!req.file) {
+        return res.status(400).send('No file uploaded.');
+    }
+
+    const videoFilePath = req.file.path;
+    const videoFileName = req.file.originalname;
+    console.log(videoFilePath)
+    console.log('Reading Video...');
+
+    const pyProg = spawn('python', ['./video.py', videoFilePath, req.token]);
+    console.log('Running Python Script...');
+
+    let responseData = '';
+    let errorData = '';
+
+    pyProg.stdout.on('data', (data) => {
+        console.log(data.toString());
+        responseData += data.toString();
+    });
+
+    pyProg.stderr.on('data', (data) => {
+        console.error(`Error: ${data}`);
+        errorData += data.toString();
+    });
+
+    pyProg.on('error', (err) => {
+        console.error('Failed to start subprocess.', err);
+        res.status(500).send('Internal Server Error');
+    });
+
+    pyProg.on('close', (code) => {
+        console.log(`Python script process exited with code ${code}`);
+        if (code === 0) {
+            res.status(200).send(responseData);
+        } else {
+            res.status(500).send(`Video processing failed. Error: ${errorData}`);
         }
     });
 });
