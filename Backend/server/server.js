@@ -37,18 +37,19 @@ const resourceSchema = new Schema({
     Skills: [String],
     Recommended_Skills: [String],
     Resume_Score: Number,
-    AboutMe:String,
+    pdf_path: String,
 
     user: {
         type: Schema.Types.ObjectId,
         ref: 'User'
-    }}
+    }
+}
     , { timestamps: true });
 const Resource = mongoose.model('Resource', resourceSchema);
 
 const VideoResumeSchema = new mongoose.Schema({
-    AboutMe :String,
-    input_file:String,
+    AboutMe: String,
+    input_file: String,
     user: {
         type: Schema.Types.ObjectId,
         ref: 'User'
@@ -110,7 +111,7 @@ app.post('/login', async (req, res) => {
         if (!validPassword) {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
-        const token = jwt.sign({ token: user._id }, secretKey); 
+        const token = jwt.sign({ token: user._id }, secretKey);
         const userResources = await Resource.findOne({ user: user._id });
 
         res.json({ token, hasResources: !!userResources });
@@ -121,17 +122,17 @@ app.post('/login', async (req, res) => {
 
 // Endpoint to Post resources to the Database.
 app.post('/resources', authenticateToken, async (req, res) => {
-    const { username, Name, Email, Phone, Links, Skills, Resume_Score } = req.body;
+    const { username, Name, Email, Phone, Links, Skills, Resume_Score, pdf_path } = req.body;
     const userId = req.user.token;
     try {
-        const resource = new Resource({ username, Name, Email, Phone, Links, Skills, Resume_Score, user: userId });
+        const resource = new Resource({ username, Name, Email, Phone, Links, Skills, Resume_Score, pdf_path, user: userId });
         const savedResource = await resource.save();
         res.status(201).json(savedResource);
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
 });
- // Endpoint to Fetch resources from the Database.
+// Endpoint to Fetch resources from the Database.
 app.get('/resources', authenticateToken, async (req, res) => {
     const userId = req.user.token;
     try {
@@ -146,10 +147,10 @@ app.get('/resources', authenticateToken, async (req, res) => {
     }
 });
 app.post('/videoResources', authenticateToken, async (req, res) => {
-    const { AboutMe ,input_file} = req.body;
+    const { AboutMe, input_file } = req.body;
     const userId = req.user.token;
     try {
-        const videoResource = new VideoResumeModel({ AboutMe, input_file,user: userId });
+        const videoResource = new VideoResumeModel({ AboutMe, input_file, user: userId });
         const savedResource = await videoResource.save();
         res.status(201).json(savedResource);
     } catch (error) {
@@ -183,14 +184,14 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 let resumeFileName = '';
 
-app.post('/upload',authenticateToken ,upload.single('resume'), (req, res) => {
+app.post('/upload', authenticateToken, upload.single('resume'), (req, res) => {
     if (!req.file) {
         return res.status(400).send('No file uploaded.');
     }
     const resumeFilePath = req.file.path;
     resumeFileName = req.file.originalname;
     console.log('Reading Resume.....');
-    const pyProg = spawn('python', ['./app.py', resumeFilePath,req.token]);
+    const pyProg = spawn('python', ['./app.py', resumeFilePath, req.token]);
     console.log('Running Python Script....');
     let responseData = '';
     let errorData = '';
@@ -232,7 +233,7 @@ const storage1 = multer.diskStorage({
 
 const upload1 = multer({ storage: storage1 });
 let videoFileName = "videoResume.mp4"
-app.post('/uploadVideo',authenticateToken, upload1.single('videoResume'), (req, res) => {
+app.post('/uploadVideo', authenticateToken, upload1.single('videoResume'), (req, res) => {
     if (!req.file) {
         return res.status(400).send('No file uploaded.');
     }
@@ -273,22 +274,34 @@ app.post('/uploadVideo',authenticateToken, upload1.single('videoResume'), (req, 
     });
 });
 
-app.get('/resumeName', (req, res) => {
-    const resumeDir = path.join(__dirname, 'resume');
-    const resumeFiles = fs.readdirSync(resumeDir);
-    if (!fs.existsSync(resumeDir) || resumeFiles.length === 0) {
-        return res.status(404).send('No resumes found.');
-    }
-    const filePath = path.join(resumeDir, resumeFileName);
-    fs.readFile(filePath, (err, data) => {
-        if (err) {
-            console.error('Error reading resume file:', err);
-            res.status(500).send('Internal Server Error');
-        } else {
+app.get('/resumeName', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.token;
+
+        console.log(userId) // Assume resourceId is passed as a query parameter
+        if (!userId) {
+            return res.status(400).send('Resource ID is required');
+        }
+
+        const resource = await Resource.findOne({ user: userId });
+        console.log(resource)
+        if (!resource || !resource.pdf_path) {
+            return res.status(404).send('Resume not found');
+        }
+
+        const filePath = path.join(__dirname, resource.pdf_path);
+        fs.readFile(filePath, (err, data) => {
+            if (err) {
+                console.error('Error reading resume file:', err);
+                return res.status(500).send('Internal Server Error');
+            }
             res.setHeader('Content-Type', 'application/pdf');
             res.send(data);
-        }
-    });
+        });
+    } catch (err) {
+        console.error('Error fetching resource:', err);
+        res.status(500).send('Internal Server Error');
+    }
 });
 
 app.get('/job', async (req, res) => {
