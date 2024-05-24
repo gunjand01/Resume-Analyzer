@@ -4,6 +4,8 @@ import sys
 import os
 from pymongo import MongoClient
 import requests
+import language_tool_python
+
 
 mongodb_uri = os.getenv("MONGODB_URI")
 client = MongoClient(mongodb_uri)
@@ -11,7 +13,15 @@ db = client.MajorProject
 collection = db.video_resume
 
 
-#Function to COnvert Video to Text
+def correct_grammar(text):
+    tool = language_tool_python.LanguageTool('en-US')
+    matches = tool.check(text)
+    corrected_text = language_tool_python.utils.correct(text, matches)
+    return corrected_text
+
+# Function to COnvert Video to Text
+
+
 def video_to_text(video_path):
     video_clip = mp.VideoFileClip(video_path)
     audio_clip = video_clip.audio
@@ -33,14 +43,13 @@ def video_to_text(video_path):
             os.remove(temp_audio_path)
 
 
-
 def main(input_file, token):
     if input_file.lower().endswith(('.mp4', '.avi', '.mkv')):
-        AboutMe = video_to_text(input_file)
+        AboutMe = correct_grammar(video_to_text(input_file))
 
         payload = {
             "AboutMe": AboutMe,
-            "input_file":input_file
+            "input_file": input_file
         }
         print(payload)
         node_server_url = "http://localhost:3001/videoResources"
@@ -49,8 +58,8 @@ def main(input_file, token):
             'Content-Type': 'application/json'
         }
 
-        response = requests.post(node_server_url, json=payload, headers=headers)
-
+        response = requests.post(
+            node_server_url, json=payload, headers=headers)
 
         if response.status_code == 201:
             print("Video Resume data saved successfully")
@@ -60,7 +69,6 @@ def main(input_file, token):
     else:
         print("Unsupported file format. Please provide a valid video file.")
         return
-
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:

@@ -121,10 +121,10 @@ app.post('/login', async (req, res) => {
 
 // Endpoint to Post resources to the Database.
 app.post('/resources', authenticateToken, async (req, res) => {
-    const { username, Name, Email, Phone, Links, Skills, Recommended_Skills, Resume_Score } = req.body;
+    const { username, Name, Email, Phone, Links, Skills, Resume_Score } = req.body;
     const userId = req.user.token;
     try {
-        const resource = new Resource({ username, Name, Email, Phone, Links, Skills, Recommended_Skills, Resume_Score, user: userId });
+        const resource = new Resource({ username, Name, Email, Phone, Links, Skills, Resume_Score, user: userId });
         const savedResource = await resource.save();
         res.status(201).json(savedResource);
     } catch (error) {
@@ -181,7 +181,7 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage: storage });
-let resumeFileName = 'Sakshi.pdf';
+let resumeFileName = '';
 
 app.post('/upload',authenticateToken ,upload.single('resume'), (req, res) => {
     if (!req.file) {
@@ -232,7 +232,7 @@ const storage1 = multer.diskStorage({
 
 const upload1 = multer({ storage: storage1 });
 let videoFileName = "videoResume.mp4"
-app.post('/uploadVideo', authenticateToken, upload1.single('video'), (req, res) => {
+app.post('/uploadVideo',authenticateToken, upload1.single('videoResume'), (req, res) => {
     if (!req.file) {
         return res.status(400).send('No file uploaded.');
     }
