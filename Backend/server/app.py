@@ -120,28 +120,7 @@ def calculate_resume_score(your_resume, all_resumes, clf):
     print(your_resume_vec)
     return clf.predict(your_resume_vec)[0]
 
-# Function to recommend skills
-def recommend_skills(extracted_skills, num_recommendations=30):
-    recommended_skills = []
-    random.shuffle(extracted_skills)
-    # Load skills dataset
-    skills_dataset = './dataset/skills.csv'
-    skills = read_skills_from_csv(skills_dataset)
-    # Loop through each skill in the dataset
-    for skill in skills:
-        skill_lower = skill.strip().lower()
-        matched = False
-        for extracted_skill in extracted_skills:
-            extracted_skill_lower = extracted_skill.strip().lower()
-            match_score = fuzz.token_set_ratio(skill_lower, extracted_skill_lower)
-            if match_score >= 40:  # Adjust the threshold as needed
-                matched = True
-                break
-        if not matched:
-            recommended_skills.append(skill)
-        if len(recommended_skills) >= num_recommendations:
-            return recommended_skills
-    return recommended_skills
+
 
 def main(pdf_file,token):
     # Paths and settings
@@ -176,9 +155,6 @@ def main(pdf_file,token):
 
     # Calculate resume score for the given resume
     resume_score = calculate_resume_score(preprocess_text(resume_text), good_resumes, clf)
-
-    # Recommend skills
-    recommended_skills = recommend_skills(extracted_skills)
     
     # Save the resume score and recommended skills in the final data
     final_data = {
@@ -187,8 +163,8 @@ def main(pdf_file,token):
         "Phone": phone,
         "Links": links,
         "Skills": extracted_data.get("skills", []),
-        "Recommended_Skills": recommended_skills,
-        "Resume_Score": resume_score
+        "Resume_Score": resume_score,
+        "pdf_path":pdf_file,
     }
     
     node_server_url = "http://localhost:3001/resources"
@@ -213,5 +189,6 @@ if __name__ == "__main__":
         print("Usage: python app.py <pdf_file> <token>")
         sys.exit(1)
     pdf_file = sys.argv[1]
+    print(pdf_file)
     token = sys.argv[2]
     main(pdf_file,token)

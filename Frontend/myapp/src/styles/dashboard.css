@@ -39,6 +39,10 @@
 .prog-bar {
 padding:20px 0px 20px 0px;
 }
+.inner-tag{
+  font-size: 20px;
+  text-align: left;
+}
 .tag {
   background-color: #62faffe4;
   color: rgb(0, 0, 0);
