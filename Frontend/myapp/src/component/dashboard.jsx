@@ -154,6 +154,32 @@ import "../../node_modules/react-circular-progressbar/dist/styles.css";
 const Dashboard = () => {
   const [resumeData, setResumeData] = useState(null);
   const [videoResumeData, setVideoResumeData] = useState(null);
+  const [pdfUrl, setPdfUrl] = useState(null);
+
+  useEffect(() => {
+    const fetchPdf = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await fetch("http://localhost:3001/resumeName", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        setPdfUrl(url);
+      } catch (error) {
+        console.error("Error fetching the PDF:", error);
+      }
+    };
+
+    fetchPdf();
+  }, []);
 
   useEffect(() => {
     const fetchResumeData = async () => {
@@ -283,7 +309,7 @@ const Dashboard = () => {
           <iframe
             title="myFrame"
             className="iframe-win"
-            src={`http://localhost:3001/resumeName/`}
+            src={pdfUrl}
             width="100%"
             height="500px"
           />
