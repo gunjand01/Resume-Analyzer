@@ -30,7 +30,7 @@ def video_to_text(video_path):
     recognizer = sr.Recognizer()
     with sr.AudioFile(temp_audio_path) as source:
         audio_data = recognizer.record(source)
-    try:
+    try:    
         text = recognizer.recognize_google(audio_data)
         document = {"video_path": video_path, "extracted_text": text}
         return text
