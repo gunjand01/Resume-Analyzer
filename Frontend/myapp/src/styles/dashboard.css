@@ -77,4 +77,58 @@ padding:20px 0px 20px 0px;
   .main-screen {
     width: 100%;
   }
+} 
+
+.dropdown-container {
+  position: relative;
+  width: 100%;
+}
+
+.dropdown-container select {
+  margin: 10px;
+  width: 50%;
+  /* padding: 10px; */
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #333;
+  appearance: none;
+  outline: none;
+  cursor: pointer;
+}
+
+.dropdown-container select:focus {
+  border-color: #62faffe4;
+}
+/* Styling for the dropdown options */
+.dropdown-container select option {
+  background-color: #de0000; /* Background color */
+  color: rgb(0, 0, 0); /* Text color */
+}
+
+/* Styling for the dropdown when expanded */
+.dropdown-container select:focus option {
+  background-color:   #d9f9fa1e; /* Background color */
+  color: rgb(255, 255, 255); /* Text color */
+}
+
+
+/* Styling for the button */
+.dropdown-container button {
+  padding: 5px 5px 5px 5px;
+  background-color: #62faffe4;
+  color: #000;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+.dropdown-container button:hover {
+  background-color: #00cc00;
+}
+
+.dropdown-container button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
 }

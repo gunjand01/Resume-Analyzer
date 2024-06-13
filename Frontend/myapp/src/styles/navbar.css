@@ -78,7 +78,7 @@
   z-index: 9;
   list-style: none;
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   justify-self: end;
 }
 

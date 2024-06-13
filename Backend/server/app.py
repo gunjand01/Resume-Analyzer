@@ -3,6 +3,7 @@ import json
 import os
 import random
 import re
+import statistics
 import warnings
 import fitz
 import spacy
@@ -21,6 +22,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from fitz import open as fitz_open
 from pymongo import MongoClient
 from dotenv import load_dotenv
+import random
+import joblib 
 
 # Load environment variables from .env file
 load_dotenv()
@@ -37,6 +40,11 @@ lemmatizer = WordNetLemmatizer()
 nlp = load('en_core_web_lg')
 nlp_sm = spacy.load("en_core_web_sm")
 matcher = Matcher(nlp.vocab)
+    
+# Function to preprocess text
+def preprocess_text(text):
+    doc = nlp(text)
+    return " ".join(token.lemma_ for token in doc if not token.is_stop and token.is_alpha and len(token.text) > 2)
 
 # Function to read skills from CSV
 def read_skills_from_csv(csv_file):
@@ -52,10 +60,6 @@ def extract_text_from_pdf(pdf_file):
         text = " ".join(page.get_text() for page in doc)
     return text
 
-# Function to preprocess text
-def preprocess_text(text):
-    doc = nlp(text)
-    return " ".join(token.lemma_ for token in doc if not token.is_stop and token.is_alpha and len(token.text) > 2)
 
 # Function to extract name
 def extract_name(resume_text):
@@ -120,14 +124,20 @@ def calculate_resume_score(your_resume, all_resumes, clf):
     print(your_resume_vec)
     return clf.predict(your_resume_vec)[0]
 
+clf = joblib.load('./ML/resume_classifier.joblib')
+vectorizer = joblib.load('./ML/vectorizer.joblib')
+
+def predict_scores(new_resumes):
+    preprocessed_resumes = [preprocess_text(resume) for resume in new_resumes]
+    X_new = vectorizer.transform(preprocessed_resumes)
+    predicted_scores = clf.predict(X_new)
+    return predicted_scores
 
 
 def main(pdf_file,token):
     # Paths and settings
     skills_csv_file = './dataset/skills.csv'
     extract_fields = ["name", "email", "skills"]
-    
-    # Extract data using Pyresparser
     extracted_data = parse_resume(pdf_file, extract_fields)
     
     # Extracted text from PDF
@@ -145,16 +155,21 @@ def main(pdf_file,token):
     skills_list = read_skills_from_csv(skills_csv_file)
 
     # Train the classifier
-    resumes_df = pd.read_csv("./dataset/URds.csv")
-    resumes_df["preprocessed_text"] = resumes_df["Resume"].fillna("") + " " + resumes_df["Category"].fillna("")
-    resumes_df["preprocessed_text"] = resumes_df["preprocessed_text"].apply(preprocess_text)
-    good_resumes = resumes_df["preprocessed_text"].tolist()
-    training_resumes = good_resumes
-    training_scores = [random.uniform(50, 100) for _ in range(len(good_resumes))]
-    clf = train_classifier(training_resumes, training_scores)
+    # resumes_df = pd.read_csv("./dataset/URds.csv")
+    # resumes_df["preprocessed_text"] = resumes_df["Resume"].fillna("") + " " + resumes_df["Category"].fillna("")
+    # resumes_df["preprocessed_text"] = resumes_df["preprocessed_text"].apply(preprocess_text)
+    # good_resumes = resumes_df["preprocessed_text"].tolist()
+    # training_resumes = good_resumes
+    # training_scores = [random.uniform(50, 100) for _ in range(len(good_resumes))]
+    # clf = train_classifier(training_resumes, training_scores)
+
 
     # Calculate resume score for the given resume
-    resume_score = calculate_resume_score(preprocess_text(resume_text), good_resumes, clf)
+    # resume_score = calculate_resume_score(preprocess_text(resume_text), good_resumes, clf)
+    new_resumes =[preprocess_text(resume_text)]
+    resume_score = predict_scores(new_resumes)
+    resume_score = statistics.mean(resume_score)
+    # print(resume_score)
     
     # Save the resume score and recommended skills in the final data
     final_data = {
@@ -189,6 +204,6 @@ if __name__ == "__main__":
         print("Usage: python app.py <pdf_file> <token>")
         sys.exit(1)
     pdf_file = sys.argv[1]
-    print(pdf_file)
+    # print(pdf_file)
     token = sys.argv[2]
     main(pdf_file,token)

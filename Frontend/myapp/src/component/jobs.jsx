@@ -8,7 +8,7 @@ const JobDetails = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:3001/jobs")
+      .get("http://localhost:3001/job")
       .then((response) => {
         setJobs(response.data.data);
       })

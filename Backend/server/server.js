@@ -283,8 +283,8 @@ app.get('/resumeName', authenticateToken, async (req, res) => {
             return res.status(400).send('Resource ID is required');
         }
 
-        const resource = await Resource.findOne({ user: userId });
-        console.log(resource)
+        const resource = await Resource.findOne({ user: userId }).sort({ createdAt: -1 });``
+        // console.log(resource)
         if (!resource || !resource.pdf_path) {
             return res.status(404).send('Resume not found');
         }
@@ -304,35 +304,67 @@ app.get('/resumeName', authenticateToken, async (req, res) => {
     }
 });
 
-app.get('/job', async (req, res) => {
+// app.get('/job', async (req, res) => {
+//     const { keyword } = req.query;
+//     const twoWeeksAgo = new Date();
+//     twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+//     const formattedDate = twoWeeksAgo.toISOString().split('T')[0];
+//     const options = {
+//         method: 'GET',
+//         url: 'https://rapid-linkedin-jobs-api.p.rapidapi.com/search-jobs',
+//         params: {
+//             keywords: keyword || 'Python',
+//             locationId: '102713980',
+//             datePosted: formattedDate,
+//             sort: 'mostRelevant'
+//         },
+//         headers: {
+//             'X-RapidAPI-Host': 'rapid-linkedin-jobs-api.p.rapidapi.com'
+//         }
+//     };
+
+//     try {
+//         const response = await axios.request(options);
+//         res.json(response.data);
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ error: 'Internal server error' });
+//     }
+// });
+
+app.get('/jobs', async (req, res) => {
     const { keyword } = req.query;
     const twoWeeksAgo = new Date();
     twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
     const formattedDate = twoWeeksAgo.toISOString().split('T')[0];
+    console.log("in jobs")
     const options = {
-        method: 'GET',
-        url: 'https://rapid-linkedin-jobs-api.p.rapidapi.com/search-jobs',
-        params: {
-            keywords: keyword || 'Python',
-            locationId: '102713980',
-            datePosted: formattedDate,
-            sort: 'mostRelevant'
-        },
-        headers: {
-            'X-RapidAPI-Host': 'rapid-linkedin-jobs-api.p.rapidapi.com'
-        }
+      method: 'GET',
+      url: 'https://rapid-linkedin-jobs-api.p.rapidapi.com/search-jobs',
+      params: {
+        keywords: keyword || 'Python', // Default to 'Python' if no keyword is provided
+        locationId: '102713980',
+        datePosted: formattedDate,
+        sort: 'mostRelevant'
+      },
+      headers: {
+        'X-RapidAPI-Host': 'rapid-linkedin-jobs-api.p.rapidapi.com',
+        'X-RapidAPI-Key': 'YOUR_RAPIDAPI_KEY' // Add your RapidAPI key here
+      }
     };
-
+  
     try {
-        const response = await axios.request(options);
-        res.json(response.data);
+      const response = await axios.request(options);
+      res.json(response.data);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Internal server error' });
+      console.error(error);
+      res.status(500).json({ error: 'Internal server error' });
     }
-});
+  });
 
-app.get('/jobs', async (req, res) => {
+  
+
+app.get('/job', async (req, res) => {
     try {
         const jobsData = JSON.parse(fs.readFileSync('./json/data.json', 'utf8'));
         res.json(jobsData);
